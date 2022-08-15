@@ -501,7 +501,7 @@ class RoIHeads(nn.Module):
         box_roi_pool,
         box_head,
         box_predictor,
-        box_iou_cpu=False, 
+        box_iou_cpu, 
         # Faster R-CNN training
         fg_iou_thresh,
         bg_iou_thresh,
@@ -530,6 +530,8 @@ class RoIHeads(nn.Module):
 
         if bbox_reg_weights is None:
             bbox_reg_weights = (10.0, 10.0, 5.0, 5.0)
+        if box_iou_cpu is None:
+            box_iou_cpu = False
         self.box_coder = det_utils.BoxCoder(bbox_reg_weights)
 
         self.box_roi_pool = box_roi_pool
