@@ -501,6 +501,7 @@ class RoIHeads(nn.Module):
         box_roi_pool,
         box_head,
         box_predictor,
+        box_iou_cpu=False, 
         # Faster R-CNN training
         fg_iou_thresh,
         bg_iou_thresh,
@@ -534,7 +535,8 @@ class RoIHeads(nn.Module):
         self.box_roi_pool = box_roi_pool
         self.box_head = box_head
         self.box_predictor = box_predictor
-
+        self.box_iou_cpu = box_iou_cpu
+        
         self.score_thresh = score_thresh
         self.nms_thresh = nms_thresh
         self.detections_per_img = detections_per_img
@@ -565,7 +567,7 @@ class RoIHeads(nn.Module):
             return False
         return True
 
-    def assign_targets_to_proposals(self, proposals, gt_boxes, gt_labels):
+    def assign_targets_to_proposals(self, proposals, gt_boxes, gt_labels, force_cpu):
         # type: (List[Tensor], List[Tensor], List[Tensor]) -> Tuple[List[Tensor], List[Tensor]]
         matched_idxs = []
         labels = []
@@ -580,9 +582,17 @@ class RoIHeads(nn.Module):
                 labels_in_image = torch.zeros((proposals_in_image.shape[0],), dtype=torch.int64, device=device)
             else:
                 #  set to self.box_similarity when https://github.com/pytorch/pytorch/issues/27495 lands
+                if force_cpu:
+                    ori_device = gt_boxes_in_image.device()
+                    gt_boxes_in_image = gt_boxes_in_image.cpu()
+                    proposals_in_image = proposals_in_image.cpu()
+                    
                 match_quality_matrix = box_ops.box_iou(gt_boxes_in_image, proposals_in_image)
                 matched_idxs_in_image = self.proposal_matcher(match_quality_matrix)
-
+                
+                if force_cpu:
+                    matched_idxs_in_image = matched_idxs_in_image.to(ori_device)
+                    
                 clamped_matched_idxs_in_image = matched_idxs_in_image.clamp(min=0)
 
                 labels_in_image = gt_labels_in_image[clamped_matched_idxs_in_image]
@@ -646,7 +656,7 @@ class RoIHeads(nn.Module):
         proposals = self.add_gt_proposals(proposals, gt_boxes)
 
         # get matching gt indices for each proposal
-        matched_idxs, labels = self.assign_targets_to_proposals(proposals, gt_boxes, gt_labels)
+        matched_idxs, labels = self.assign_targets_to_proposals(proposals, gt_boxes, gt_labels, self.box_iou_cpu)
         # sample a fixed proportion of positive-negative proposals
         sampled_inds = self.subsample(labels)
         matched_gt_boxes = []
