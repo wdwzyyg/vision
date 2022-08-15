@@ -585,7 +585,7 @@ class RoIHeads(nn.Module):
             else:
                 #  set to self.box_similarity when https://github.com/pytorch/pytorch/issues/27495 lands
                 if force_cpu:
-                    ori_device = gt_boxes_in_image.device()
+                    ori_device = gt_boxes_in_image.device
                     gt_boxes_in_image = gt_boxes_in_image.cpu()
                     proposals_in_image = proposals_in_image.cpu()
                     
