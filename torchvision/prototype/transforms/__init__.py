@@ -3,7 +3,7 @@ from . import functional  # usort: skip
 from ._transform import Transform  # usort: skip
 
 from ._augment import RandomCutmix, RandomErasing, RandomMixup
-from ._auto_augment import AugMix, AutoAugment, RandAugment, TrivialAugmentWide
+from ._auto_augment import AugMix, AutoAugment, AutoAugmentPolicy, RandAugment, TrivialAugmentWide
 from ._color import (
     ColorJitter,
     RandomAdjustSharpness,
@@ -24,16 +24,18 @@ from ._geometry import (
     RandomAffine,
     RandomCrop,
     RandomHorizontalFlip,
+    RandomIoUCrop,
     RandomPerspective,
     RandomResizedCrop,
     RandomRotation,
+    RandomShortestSize,
     RandomVerticalFlip,
     RandomZoomOut,
     Resize,
     ScaleJitter,
     TenCrop,
 )
-from ._meta import ConvertBoundingBoxFormat, ConvertImageColorSpace, ConvertImageDtype
+from ._meta import ConvertBoundingBoxFormat, ConvertColorSpace, ConvertImageDtype
 from ._misc import GaussianBlur, Identity, Lambda, Normalize, ToDtype
 from ._type_conversion import DecodeImage, LabelToOneHot, ToImagePIL, ToImageTensor
 
